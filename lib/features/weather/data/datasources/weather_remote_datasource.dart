@@ -10,44 +10,42 @@
  */
 
 import 'package:dio/dio.dart';
+import 'package:justaweather/config/weather_config.dart';
 import '../models/weather_model.dart';
 import '../models/forecast_model.dart';
+import '../../../../config/weather_config.dart';
 
 class WeatherRemoteDataSource {
   // This class will handle remote data fetching operations for weather data.
   // It can use Dio, http, or any other HTTP client library.
   
-  final Dio dio;
-  final String apiKey;
+ final Dio dio;
+ final String apiKey;
 
-  WeatherRemoteDataSource({required this.dio});
+  WeatherRemoteDataSource({required this.dio, required this.apiKey});
 
-  Future<WeatherModel> fetchCurrentWeather(String city) async {
-    final response = await dio.get('https://api.openweathermap.org/data/2.5/weather', queryParameters: {
-      'q': city,
-      'appid': apiKey,
-      'units': 'metric',
-    });
-
-    if (response.statusCode == 200) {
-      return WeatherModel.fromJson(response.data);
-    } else {
-      throw Exception('Failed to load current weather');
-    }
+  Future<WeatherModel> getCurrentWeather(String cityName) async {
+    final response = await dio.get(
+      '${WeatherConfig.baseUrl}/weather',
+      queryParameters: {
+        'q': cityName,
+        'appid': apiKey,
+        'units': WeatherConfig.units, // Use the units defined in WeatherConfig
+      },
+    );
+    return WeatherModel.fromJson(response.data);
   }
 
-  Future<List<ForecastModel>> fetchForecast(String city) async {
-    final response = await dio.get('https://api.openweathermap.org/data/2.5/forecast', queryParameters: {
-      'q': city,
-      'appid': apiKey,
-      'units': 'metric',
-    });
-
-    if (response.statusCode == 200) {
-      final List<dynamic> forecastList = response.data['list'];
-      return forecastList.map((e) => ForecastModel.fromJson(e)).toList();
-    } else {
-      throw Exception('Failed to load forecast');
-    }
+  Future<List<ForecastModel>> getFiveDayForecast(String cityName) async {
+    final response = await dio.get(
+      '${WeatherConfig.baseUrl}/forecast',
+      queryParameters: {
+        'q': cityName,
+        'appid': apiKey,
+        'units': WeatherConfig.units,
+      },
+    );
+    final List<dynamic> list = response.data['list'];
+    return list.map((e) => ForecastModel.fromJson(e)).toList();
   }
 }

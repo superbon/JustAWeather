@@ -13,7 +13,7 @@ import '../datasources/weather_local_datasource.dart';
 import '../models/weather_model.dart';
 import '../models/forecast_model.dart';
 
-class WeatherRepositoryImp {
+class WeatherRepositoryImp implements WeatherRepository {
   final WeatherLocalDataSource localDataSource;
   final WeatherRemoteDataSource remoteDataSource;
 
