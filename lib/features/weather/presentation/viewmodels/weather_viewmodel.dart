@@ -17,6 +17,7 @@ import '../../domain/entities/weather.dart';
 import '../../domain/entities/forecast.dart';
 import '../../domain/repositories/weather_repository.dart';
 import '../../../../config/weather_config.dart';
+import 'package:intl/intl.dart';
 
 
 final weatherViewModelProvider = StateNotifierProvider<WeatherViewModel, AsyncValue<Weather>>((ref) {
@@ -44,4 +45,17 @@ class WeatherViewModel extends StateNotifier<AsyncValue<Weather>> {
       state = AsyncValue.error(e, st);
     }
   }
+
+  List<Forecast> getDailyForecasts(List<Forecast> all) {
+  final Map<String, Forecast> daily = {};
+  for (final f in all) {
+    final key = DateFormat('yyyy-MM-dd').format(f.date);
+    if (!daily.containsKey(key) ||
+        (daily[key] != null &&
+         (f.date.hour - 12).abs() < (daily[key]!.date.hour - 12).abs())) {
+      daily[key] = f;
+    }
+  }
+  return daily.values.toList();
+}
 }

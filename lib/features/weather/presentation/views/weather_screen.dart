@@ -17,61 +17,136 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../presentation/viewmodels/weather_viewmodel.dart';
 import '../../../../core/services/location_service.dart';
+import 'package:justaweather/features/weather/domain/entities/forecast.dart';
+import 'package:intl/intl.dart';
 
-
-class WeatherScreen extends ConsumerWidget {
+class WeatherScreen extends ConsumerStatefulWidget {
   final String cityName;
-
   const WeatherScreen({super.key, required this.cityName});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-  final viewModel = ref.read(weatherViewModelProvider.notifier);
-  final weather = ref.watch(weatherViewModelProvider);
-  final forecast = ref.watch(forecastProvider(cityName));
+  ConsumerState<WeatherScreen> createState() => _WeatherScreenState();
+}
 
-  WidgetsBinding.instance.addPostFrameCallback((_) async {
+class _WeatherScreenState extends ConsumerState<WeatherScreen> {
+  String? _cityName;
+
+  bool _isSearching = false;
+  final TextEditingController _searchController = TextEditingController();
+
+  void _toggleSearch() {
+    setState(() {
+      _isSearching = !_isSearching;
+      if (!_isSearching) _searchController.clear();
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadWeather();
+  }
+
+  Future<void> _loadWeather() async {
+    final viewModel = ref.read(weatherViewModelProvider.notifier);
     try {
       final city = await LocationService.getCurrentCity();
+      setState(() => _cityName = city);
       viewModel.fetchWeather(city);
     } catch (e) {
-      // handle error: permission denied, service off, etc.
       debugPrint('Location error: $e');
-      viewModel.fetchWeather("Manila"); // fallback
+      setState(() => _cityName = 'Manila');
+      viewModel.fetchWeather('Manila');
     }
-  });
+  }
 
-    
+  @override
+  Widget build(BuildContext context) {
+    final weather = ref.watch(weatherViewModelProvider);
+    final forecast = ref.watch(forecastProvider(_cityName ?? widget.cityName));
+    final viewModel = ref.read(weatherViewModelProvider.notifier);
 
     return Scaffold(
-      appBar: AppBar(title: Text(cityName)),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(_isSearching ? Icons.close : Icons.search),
+          onPressed: _toggleSearch,
+        ),
+        title: _isSearching
+            ? TextField(
+                controller: _searchController,
+                autofocus: true,
+                style: const TextStyle(color: Colors.white),
+                decoration: const InputDecoration(
+                  hintText: 'Search city...',
+                  hintStyle: TextStyle(color: Colors.white60),
+                  border: InputBorder.none,
+                ),
+                onSubmitted: (query) {
+                  // TODO: Trigger search logic (e.g. viewModel.search(query))
+                },
+              )
+            : const Text(
+                'Weather App',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              // TODO: Navigate to settings screen
+            },
+          ),
+        ],
+      ),
       body: weather.when(
         data: (w) => Column(
           children: [
             Text('${w.cityName} - ${w.temperature}°C'),
             Text(w.condition),
             forecast.when(
-              data: (list) => Expanded(
-                child: ListView.builder(
-                  itemCount: list.length,
-                  itemBuilder: (context, index) {
-                    final f = list[index];
-                    return ListTile(
-                      title: Text('${f.date.hour}:00 - ${f.temperature}°C'),
-                      subtitle: Text(f.condition),
-                      leading: Image.asset('assets/images/${f.icon}.png', width: 40),
-                    );
-                  },
-                ),
-              ),
+              data: (list) {
+                final dailyForecasts = viewModel.getDailyForecasts(list);
+                return Expanded(child: ListViewForecast(dailyForecasts));
+              },
               loading: () => const CircularProgressIndicator(),
               error: (e, _) => Text('Forecast error: $e'),
-            )
+            ),
           ],
         ),
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        error: (e, _) => Center(child: Text('Error nos: $e')),
       ),
+    );
+  }
+
+  ListView ListViewForecast(List<Forecast> list) {
+    return ListView.builder(
+      itemCount: list.length,
+      itemBuilder: (context, index) {
+        final f = list[index];
+        final dayString = DateFormat('E').format(f.date);
+        final dateString = DateFormat('MMM d').format(f.date);
+        final timeString = DateFormat('h:mm a').format(f.date);
+
+        return ListTile(
+          leading: Image.network(
+            'https://openweathermap.org/img/wn/${f.icon}@2x.png',
+            width: 50,
+            height: 50,
+            fit: BoxFit.cover,
+            loadingBuilder: (context, child, progress) =>
+                progress == null ? child : const CircularProgressIndicator(),
+            errorBuilder: (context, error, stackTrace) {
+              print('Failed to load icon: ${f.icon}');
+              return const Icon(Icons.error, size: 40, color: Colors.red);
+            },
+          ),
+          title: Text('${f.temperature}°C  •  ${f.condition}'),
+          subtitle: Text('$dayString, $dateString, $timeString'),
+        );
+      },
     );
   }
 }

@@ -4,6 +4,8 @@ import 'package:justaweather/features/weather/presentation/views/weather_home_sc
 import 'package:justaweather/features/weather/presentation/views/weather_screen.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:justaweather/core/services/location_service.dart';
+import 'package:go_router/go_router.dart';
+import 'package:justaweather/config/router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,27 +26,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       debugShowCheckedModeBanner: false,
-      home: FutureBuilder<String>(
-        future: (() async {
-  try {
-    return await LocationService.getCurrentCity();
-  } catch (e) {
-    debugPrint('Location error: $e');
-    return 'Manila'; // fallback
-  }
-})(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Scaffold(body: Center(child: CircularProgressIndicator()));
-          } else if (snapshot.hasError) {
-            return const Scaffold(body: Center(child: Text('Failed to get location')));
-          } else {
-            return WeatherScreen(cityName: snapshot.data!);
-          }
-        },
-      ),
+      routerConfig: appRouter,
     );
   }
 }

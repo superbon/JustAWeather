@@ -31,6 +31,7 @@ class WeatherRepositoryImp implements WeatherRepository {
         cityName: model.cityName,
         temperature: model.temperature,
         condition: model.condition,
+        description: model.description,
         icon: model.icon,
         lastUpdated: model.lastUpdated,
       );
@@ -41,6 +42,7 @@ class WeatherRepositoryImp implements WeatherRepository {
           cityName: cached.cityName,
           temperature: cached.temperature,
           condition: cached.condition,
+          description: cached.description,
           icon: cached.icon,
           lastUpdated: cached.lastUpdated,
         );
@@ -59,6 +61,7 @@ class WeatherRepositoryImp implements WeatherRepository {
                 date: m.date,
                 temperature: m.temperature,
                 condition: m.condition,
+                description: m.description,
                 icon: m.icon,
               ))
           .toList();
@@ -69,6 +72,7 @@ class WeatherRepositoryImp implements WeatherRepository {
                 date: m.date,
                 temperature: m.temperature,
                 condition: m.condition,
+                description: m.description,
                 icon: m.icon,
               ))
           .toList();

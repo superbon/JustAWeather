@@ -13,6 +13,7 @@ class WeatherModel {
   final String cityName;
   final double temperature;
   final String condition;
+  final String description;
   final String icon;
   final DateTime lastUpdated;
 
@@ -20,6 +21,7 @@ class WeatherModel {
     required this.cityName,
     required this.temperature,
     required this.condition,
+    required this.description,
     required this.icon,
     required this.lastUpdated,
   });
@@ -30,7 +32,8 @@ class WeatherModel {
       cityName: json['name'],
       temperature: (json['main']['temp'] as num).toDouble(),
       condition: json['weather'][0]['main'],
-      icon: json['weather'][0]['icon'],
+      description: json['weather'][0]['description'] ?? '',
+      icon: json['weather'][0]['icon'] ?? '',
       lastUpdated: DateTime.now(),
     );
   }
@@ -40,7 +43,7 @@ class WeatherModel {
       'name': cityName,
       'main': {'temp': temperature},
       'weather': [
-        {'main': condition, 'icon': icon}
+        {'main': condition, 'description': description, 'icon': icon}
       ],
       'lastUpdated': lastUpdated.toIso8601String(),
     };

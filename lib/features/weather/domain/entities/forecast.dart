@@ -14,17 +14,19 @@ class Forecast {
   final DateTime date;
   final double temperature;
   final String condition;
+  final String description;
   final String icon;
 
   Forecast({
     required this.date,
     required this.temperature,
     required this.condition,
+    required this.description,
     required this.icon,
   });
 
   @override
   String toString() {
-    return 'Forecast(date: $date, temperature: $temperature, condition: $condition, icon: $icon)';
+    return 'Forecast(date: $date, temperature: $temperature, condition: $condition, icon: $icon, description: $description)';
   }
 }

@@ -14,6 +14,7 @@ class Weather {
   final String cityName;
   final double temperature;
   final String condition;
+  final String description;
   final String icon;
   final DateTime lastUpdated;
 
@@ -21,12 +22,13 @@ class Weather {
     required this.cityName,
     required this.temperature,
     required this.condition,
+    required this.description,
     required this.icon,
     required this.lastUpdated,
   });
 
   @override
   String toString() {
-    return 'Weather(cityName: $cityName, temperature: $temperature, condition: $condition, icon: $icon, lastUpdated: $lastUpdated)';
+    return 'Weather(cityName: $cityName, temperature: $temperature, condition: $condition, icon: $icon, lastUpdated: $lastUpdated, description: $description)';
   }
 }
