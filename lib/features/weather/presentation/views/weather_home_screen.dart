@@ -12,7 +12,6 @@
  * It is used to display weather information in a structured format.
  */
 
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../presentation/viewmodels/weather_viewmodel.dart';
@@ -77,14 +76,18 @@ class _WeatherHomeScreenState extends ConsumerState<WeatherHomeScreen> {
             ? TextField(
                 controller: _searchController,
                 autofocus: true,
-                style: const TextStyle(color: Colors.white),
+                style: const TextStyle(color: Colors.black),
                 decoration: const InputDecoration(
                   hintText: 'Search city...',
-                  hintStyle: TextStyle(color: Colors.white60),
+                  hintStyle: TextStyle(color: Colors.black),
                   border: InputBorder.none,
                 ),
                 onSubmitted: (query) {
                   // TODO: Trigger search logic (e.g. viewModel.search(query))
+                  if (query.trim().isEmpty) return;
+                  context.push('/search/${query.trim()}');
+                  _searchController.clear();
+                  _toggleSearch();
                 },
               )
             : const Text(
@@ -146,7 +149,9 @@ class _WeatherHomeScreenState extends ConsumerState<WeatherHomeScreen> {
               return const Icon(Icons.error, size: 40, color: Colors.red);
             },
           ),
-          title: Text('${f.temperature}°C  •  ${f.condition} - ${f.description}'),
+          title: Text(
+            '${f.temperature}°C  •  ${f.condition} - ${f.description}',
+          ),
           subtitle: Text('$dayString, $dateString'),
         );
       },
