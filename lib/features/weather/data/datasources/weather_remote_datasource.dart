@@ -10,10 +10,10 @@
  */
 
 import 'package:dio/dio.dart';
-import 'package:justaweather/config/weather_config.dart';
 import '../models/weather_model.dart';
 import '../models/forecast_model.dart';
 import '../../../../config/weather_config.dart';
+import '../../domain/exceptions/location_not_found_exception.dart';
 
 class WeatherRemoteDataSource {
   // This class will handle remote data fetching operations for weather data.
@@ -25,16 +25,27 @@ class WeatherRemoteDataSource {
   WeatherRemoteDataSource({required this.dio, required this.apiKey});
 
   Future<WeatherModel> getCurrentWeather(String cityName) async {
+  try {
     final response = await dio.get(
       '${WeatherConfig.baseUrl}/weather',
       queryParameters: {
         'q': cityName,
         'appid': apiKey,
-        'units': WeatherConfig.units, // Use the units defined in WeatherConfig
+        'units': WeatherConfig.units,
       },
     );
     return WeatherModel.fromJson(response.data);
+  } on DioException catch (e) {
+    if (e.response?.statusCode == 404 ||
+        (e.response?.data['message']?.toString().toLowerCase().contains('city not found') ?? false)) {
+      throw LocationNotFoundException('Location not found: $cityName');
+    } else {
+      throw Exception('Failed to fetch current weather: ${e.message}');
+    }
+  } catch (e) {
+    throw Exception('Failed to fetch current weather: $e');
   }
+}
 
   Future<List<ForecastModel>> getFiveDayForecast(String cityName) async {
     final response = await dio.get(

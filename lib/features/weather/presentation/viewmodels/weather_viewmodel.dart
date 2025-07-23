@@ -18,44 +18,51 @@ import '../../domain/entities/forecast.dart';
 import '../../domain/repositories/weather_repository.dart';
 import '../../../../config/weather_config.dart';
 import 'package:intl/intl.dart';
+import '../../domain/usecases/get_weather_usecase.dart';
 
 
 final weatherViewModelProvider = StateNotifierProvider<WeatherViewModel, AsyncValue<Weather>>((ref) {
-  final repository = ref.watch(weatherRepositoryProvider);
-  return WeatherViewModel(repository: repository);
+  final repository = ref.watch(weatherRepositoryProvider);   // from data 
+  final getWeather = GetWeatherUseCase(repository); // use case
+  return WeatherViewModel(getWeather: getWeather);
 });
 
 final forecastProvider = FutureProvider.autoDispose.family<List<Forecast>, String>((ref, cityName) async {
-  final repository = ref.watch(weatherRepositoryProvider);
-  return await repository.getFiveDayForecast(cityName);
+  final repository = ref.watch(weatherRepositoryProvider); 
+  final getWeather = GetWeatherUseCase(repository);
+  return await getWeather.getFiveDayForecast(cityName);
 });
 
 class WeatherViewModel extends StateNotifier<AsyncValue<Weather>> {
-  final WeatherRepository _repository;
+  final GetWeatherUseCase _getWeather;
 
-  WeatherViewModel({required WeatherRepository repository}) 
-      : _repository = repository,
+  WeatherViewModel({required GetWeatherUseCase getWeather}) 
+      : _getWeather = getWeather,
         super(const AsyncValue.loading());
 
   Future<void> fetchWeather(String cityName) async {
     try {
-      final weather = await _repository.getCurrentWeather(cityName);
+      final weather = await _getWeather(cityName); // call use case
       state = AsyncValue.data(weather);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }
   }
 
-  List<Forecast> getDailyForecasts(List<Forecast> all) {
-  final Map<String, Forecast> daily = {};
-  for (final f in all) {
-    final key = DateFormat('yyyy-MM-dd').format(f.date);
-    if (!daily.containsKey(key) ||
-        (daily[key] != null &&
-         (f.date.hour - 12).abs() < (daily[key]!.date.hour - 12).abs())) {
-      daily[key] = f;
-    }
+  Future<List<Forecast>> getFiveDayForecast(String cityName) {
+    return _getWeather.getFiveDayForecast(cityName); // use case
   }
-  return daily.values.toList();
-}
+
+  List<Forecast> getDailyForecasts(List<Forecast> all) {
+    final Map<String, Forecast> daily = {};
+    for (final f in all) {
+      final key = DateFormat('yyyy-MM-dd').format(f.date);
+      if (!daily.containsKey(key) ||
+          (daily[key] != null &&
+              (f.date.hour - 12).abs() < (daily[key]!.date.hour - 12).abs())) {
+        daily[key] = f;
+      }
+    }
+    return daily.values.toList();
+  }
 }

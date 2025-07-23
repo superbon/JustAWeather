@@ -10,6 +10,8 @@
  * It is used in the WeatherRepositoryImp class to return forecast data.
  */
 
+import 'package:intl/intl.dart';
+
 class Forecast {
   final DateTime date;
   final double temperature;
@@ -24,6 +26,8 @@ class Forecast {
     required this.description,
     required this.icon,
   });
+
+  String get day => DateFormat('E').format(date); // e.g., 'Mon'
 
   @override
   String toString() {

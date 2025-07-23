@@ -58,7 +58,7 @@ final GoRouter appRouter = GoRouter(
       name: 'searchResult',
       builder: (context, state) {
         final city = state.pathParameters['city']!;
-        return SearchResultScreen(city: city);
+        return SearchResultScreen(cityName: city);
       },
     ), // Add other routes here
   ],
