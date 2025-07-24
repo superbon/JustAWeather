@@ -13,32 +13,58 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../providers/temp_unit_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final tempUnitAsync = ref.watch(tempUnitProvider);
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-      ),
-      body: ListView(
-        children: [
-          ListTile(
-            title: const Text('Change Theme'),
-            onTap: () {
-              // Logic to change theme
-            },
-          ),
-          ListTile(
-            title: const Text('Change Language'),
-            onTap: () {
-              // Logic to change language
-            },
-          ),
-          // Add more settings options here
-        ],
+      appBar: AppBar(title: const Text('Settings')),
+      body: tempUnitAsync.when(
+        data: (unit) => ListView(
+          children: [
+            ListTile(
+              title: const Text('Location List'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.push('/locations'), // GoRouter navigation
+            ),
+            ListTile(
+              title: const Text('Change Theme'),
+              onTap: () {
+                // Logic to change theme
+              },
+            ),
+            ListTile(
+              title: const Text('Temperature Unit'),
+              trailing: DropdownButton<TempUnit>(
+                value: unit,
+                items: [
+                  DropdownMenuItem(
+                    value: TempUnit.celsius,
+                    child: Text('Celsius (°C)'),
+                  ),
+                  DropdownMenuItem(
+                    value: TempUnit.fahrenheit,
+                    child: Text('Fahrenheit (°F)'),
+                  ),
+                ],
+                onChanged: (TempUnit? newValue) {
+                  if (newValue != null) {
+                    ref.read(tempUnitProvider.notifier).setUnit(newValue);
+                  }
+                },
+              ),
+            ),
+            // Add more settings options here
+          ],
+        ),
+        loading: () => Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(child: Text('Error: $e')),
       ),
     );
   }

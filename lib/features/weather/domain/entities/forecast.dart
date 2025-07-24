@@ -28,6 +28,7 @@ class Forecast {
   });
 
   String get day => DateFormat('E').format(date); // e.g., 'Mon'
+  String get time => DateFormat('hh:mm a').format(date); 
 
   @override
   String toString() {

@@ -14,59 +14,32 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-
 import '../../presentation/viewmodels/search_result_viewmodel.dart';
-import '../widgets/weather_details_widget.dart';
-import '../widgets/forecast_list_widget.dart';
+import '../../../../shared/widgets/weather_details_widget.dart';
+import '../../../../shared/widgets/forecast_list_widget.dart';
 import '../../../weather/domain/exceptions/location_not_found_exception.dart';
+import '../../../weather/presentation/widgets/weather_background_widget.dart';
 
-class SearchResultScreen extends ConsumerStatefulWidget {
+class SearchResultScreen extends ConsumerWidget {
   final String cityName;
   const SearchResultScreen({required this.cityName, super.key});
 
   @override
-  ConsumerState<SearchResultScreen> createState() => _SearchResultScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final weatherAsync = ref.watch(searchResultViewModelProvider(cityName));
+    final forecastAsync = ref.watch(searchForecastProvider(cityName));
+    final searchController = TextEditingController(text: cityName);
 
-class _SearchResultScreenState extends ConsumerState<SearchResultScreen> {
-  late TextEditingController _searchController;
-  late String _currentCity;
-
-  @override
-  void initState() {
-    super.initState();
-    _currentCity = widget.cityName;
-    _searchController = TextEditingController(text: _currentCity);
-  }
-
-  void _onSearch(String query) {
-    if (query.trim().isEmpty) return;
-    context.go('/search/${Uri.encodeComponent(query.trim())}');
-    setState(() {
-      _currentCity = query.trim();
-    });
-    FocusScope.of(context).unfocus();
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final weatherAsync = ref.watch(searchResultViewModelProvider(_currentCity));
-    final forecastAsync = ref.watch(searchForecastProvider(_currentCity));
+    print("weatherAsync: $weatherAsync");
 
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => context.go('/'),
         ),
         title: TextField(
-          controller: _searchController,
+          controller: searchController,
           autofocus: false,
           style: const TextStyle(color: Colors.black),
           decoration: const InputDecoration(
@@ -74,55 +47,79 @@ class _SearchResultScreenState extends ConsumerState<SearchResultScreen> {
             hintStyle: TextStyle(color: Colors.black),
             border: InputBorder.none,
           ),
-          onSubmitted: _onSearch,
+          onSubmitted: (query) {
+            if (query.trim().isEmpty) return;
+            context.go('/search/${Uri.encodeComponent(query.trim())}');
+            FocusScope.of(context).unfocus();
+          },
           textInputAction: TextInputAction.search,
         ),
         centerTitle: true,
-      ), 
-      body: SingleChildScrollView(
-        child: Column(
+      ),
+      body: weatherAsync.when(
+        data: (weather) => Stack(
           children: [
-            weatherAsync.when(
-              data: (weather) => WeatherDetailsWidget(weather: weather),
-              loading: () => const Padding(
-                padding: EdgeInsets.all(24.0),
-                child: CircularProgressIndicator(),
-              ),
-              error: (e, _) => Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Text(
-                  (e is LocationNotFoundException)
-                      ? 'Location not found.\nPlease check the spelling or try another location.'
-                      : 'Weather error: $e',
-                  style: const TextStyle(
-                    color: Colors.red,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              "5-Day Forecast",
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-            forecastAsync.when(
-              data: (forecastList) =>
-                  ForecastListWidget(forecasts: forecastList),
-              loading: () => const Padding(
-                padding: EdgeInsets.all(24.0),
-                child: CircularProgressIndicator(),
-              ),
-              error: (e, _) => Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Text(
-                  'Forecast error: $e',
-                  style: TextStyle(color: Colors.red),
+            WeatherBackgroundWidget(condition: weather.condition),
+            SafeArea(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    const SizedBox(height: 16),
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16.0,
+                        vertical: 8.0,
+                      ), // You can adjust values
+                      child: Align(
+                        alignment: Alignment
+                            .centerLeft, // This will left-align the widget
+                        child: WeatherDetailsWidget(weather: weather),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      "5-Day Forecast",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                    forecastAsync.when(
+                      data: (forecastList) =>
+                          ForecastListWidget(forecasts: forecastList),
+                      loading: () => const Padding(
+                        padding: EdgeInsets.all(24.0),
+                        child: CircularProgressIndicator(),
+                      ),
+                      error: (e, _) => Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Text(
+                          'Forecast error: $e',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
           ],
+        ),
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Text(
+              (e is LocationNotFoundException)
+                  ? 'Location not found.\nPlease check the spelling or try another location.'
+                  : 'Weather error: $e',
+              style: const TextStyle(
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
         ),
       ),
     );

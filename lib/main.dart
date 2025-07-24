@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:justaweather/features/weather/presentation/views/weather_home_screen.dart';
-import 'package:justaweather/features/weather/presentation/views/weather_screen.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:justaweather/core/services/location_service.dart';
-import 'package:go_router/go_router.dart';
 import 'package:justaweather/config/router.dart';
 
 void main() async {

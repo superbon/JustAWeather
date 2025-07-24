@@ -16,9 +16,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../presentation/viewmodels/weather_viewmodel.dart';
 import '../../../../core/services/location_service.dart';
-import 'package:justaweather/features/weather/domain/entities/forecast.dart';
-import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
+//import '../widgets/forecast_list_widget.dart';
+import '../widgets/weather_background_widget.dart';
+import '../../../../shared/widgets/weather_details_widget.dart';
+import '../../../../shared/widgets/forecast_list_widget.dart';
+import '../../../weather/domain/exceptions/location_not_found_exception.dart';
+import '../../../location/presentation/viewmodel/location_list_viewmodel.dart';
 
 class WeatherHomeScreen extends ConsumerStatefulWidget {
   final String cityName;
@@ -48,7 +52,9 @@ class _WeatherHomeScreenState extends ConsumerState<WeatherHomeScreen> {
   }
 
   Future<void> _loadWeather() async {
-    final viewModel = ref.read(weatherViewModelProvider.notifier);
+    final viewModel = ref.read(
+      weatherViewModelProvider(_cityName ?? widget.cityName).notifier,
+    );
     try {
       final city = await LocationService.getCurrentCity();
       setState(() => _cityName = city);
@@ -62,9 +68,15 @@ class _WeatherHomeScreenState extends ConsumerState<WeatherHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final weather = ref.watch(weatherViewModelProvider);
-    final forecast = ref.watch(forecastProvider(_cityName ?? widget.cityName));
-    final viewModel = ref.read(weatherViewModelProvider.notifier);
+    // Provider access and state management at the screen level
+    final weatherAsync = ref.watch(
+      weatherViewModelProvider(_cityName ?? widget.cityName),
+    );
+    final forecastAsync = ref.watch(
+      forecastProvider(_cityName ?? widget.cityName),
+    );
+
+    final locationsAsync = ref.watch(locationListViewModelProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -79,11 +91,10 @@ class _WeatherHomeScreenState extends ConsumerState<WeatherHomeScreen> {
                 style: const TextStyle(color: Colors.black),
                 decoration: const InputDecoration(
                   hintText: 'Search city...',
-                  hintStyle: TextStyle(color: Colors.black),
+                  hintStyle: TextStyle(color: Colors.black54),
                   border: InputBorder.none,
                 ),
                 onSubmitted: (query) {
-                  // TODO: Trigger search logic (e.g. viewModel.search(query))
                   if (query.trim().isEmpty) return;
                   context.push('/search/${query.trim()}');
                   _searchController.clear();
@@ -91,7 +102,7 @@ class _WeatherHomeScreenState extends ConsumerState<WeatherHomeScreen> {
                 },
               )
             : const Text(
-                'Weather App',
+                'Just a Weather',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
         centerTitle: true,
@@ -99,62 +110,115 @@ class _WeatherHomeScreenState extends ConsumerState<WeatherHomeScreen> {
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
-              // TODO: Navigate to settings screen
               context.push('/settings');
             },
           ),
         ],
       ),
-      body: weather.when(
-        data: (w) => Column(
+      body: weatherAsync.when(
+        data: (weather) => Stack(
           children: [
-            Text('${w.cityName} - ${w.temperature}°C'),
-            Text(w.condition),
-            Text(w.description),
-            forecast.when(
-              data: (list) {
-                final dailyForecasts = viewModel.getDailyForecasts(list);
-                return Expanded(child: ListViewForecast(dailyForecasts));
-              },
-              loading: () => const CircularProgressIndicator(),
-              error: (e, _) => Text('Forecast error: $e'),
+            WeatherBackgroundWidget(condition: weather.condition),
+            SafeArea(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    const SizedBox(height: 16),
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16.0,
+                        vertical: 8.0,
+                      ), // You can adjust values
+                      child: Align(
+                        alignment: Alignment
+                            .centerLeft, // This will left-align the widget
+                        child: WeatherDetailsWidget(weather: weather),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      "5-Day Forecast",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    forecastAsync.when(
+                      data: (forecastList) =>
+                          ForecastListWidget(forecasts: forecastList),
+                      loading: () => const Padding(
+                        padding: EdgeInsets.all(24.0),
+                        child: CircularProgressIndicator(),
+                      ),
+                      error: (e, _) => Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Text(
+                          'Forecast error: $e',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      "Saved Locations",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                    locationsAsync.when(
+                      data: (locations) {
+                        if (locations.isEmpty) return const SizedBox.shrink();
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 0),
+                          child: Wrap(
+                            spacing: 8,
+                            children: locations
+                                .map(
+                                  (loc) => ActionChip(
+                                    label: Text(loc.name),
+                                    onPressed: () {
+                                      // Push to weather/search result screen for that location
+                                      context.pushNamed(
+                                        'searchResult',
+                                        pathParameters: {
+                                          'city': Uri.encodeComponent(loc.name),
+                                        },
+                                      );
+                                    },
+                                  ),
+                                )
+                                .toList(),
+                          ),
+                        );
+                      },
+                      loading: () => const CircularProgressIndicator(),
+                      error: (e, _) => const SizedBox.shrink(),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error this: $e')),
+        error: (e, _) => Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Text(
+              (e is LocationNotFoundException)
+                  ? 'Location not found.\nPlease check the spelling or try another location.'
+                  : 'Weather error: $e',
+              style: const TextStyle(
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
       ),
-    );
-  }
-
-  ListView ListViewForecast(List<Forecast> list) {
-    return ListView.builder(
-      itemCount: list.length,
-      itemBuilder: (context, index) {
-        final f = list[index];
-        final dayString = DateFormat('E').format(f.date);
-        final dateString = DateFormat('MMM d').format(f.date);
-        final timeString = DateFormat('h:mm a').format(f.date);
-
-        return ListTile(
-          leading: Image.network(
-            'https://openweathermap.org/img/wn/${f.icon}@2x.png',
-            width: 50,
-            height: 50,
-            fit: BoxFit.cover,
-            loadingBuilder: (context, child, progress) =>
-                progress == null ? child : const CircularProgressIndicator(),
-            errorBuilder: (context, error, stackTrace) {
-              print('Failed to load icon: ${f.icon}');
-              return const Icon(Icons.error, size: 40, color: Colors.red);
-            },
-          ),
-          title: Text(
-            '${f.temperature}°C  •  ${f.condition} - ${f.description}',
-          ),
-          subtitle: Text('$dayString, $dateString'),
-        );
-      },
     );
   }
 }

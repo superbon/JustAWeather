@@ -17,6 +17,7 @@ import 'package:justaweather/features/settings/presentation/views/settings_scree
 import 'package:justaweather/features/weather/presentation/views/weather_home_screen.dart';
 import 'package:justaweather/core/services/location_service.dart';
 import 'package:justaweather/features/search/presentation/views/search_result_screen.dart';
+import 'package:justaweather/features/location/presentation/views/location_list_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   routes: [
@@ -54,11 +55,18 @@ final GoRouter appRouter = GoRouter(
           SettingsScreen(), // Replace with your actual settings screen
     ),
     GoRoute(
+      path: '/locations',
+      builder: (context, state) => LocationListScreen(),
+    ),
+    GoRoute(
       path: '/search/:city',
       name: 'searchResult',
       builder: (context, state) {
-        final city = state.pathParameters['city']!;
-        return SearchResultScreen(cityName: city);
+        final city = Uri.decodeComponent(state.pathParameters['city']!);
+        return SearchResultScreen(
+          key: ValueKey(city), 
+          cityName: city,
+        );
       },
     ), // Add other routes here
   ],

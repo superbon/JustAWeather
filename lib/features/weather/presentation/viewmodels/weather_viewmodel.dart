@@ -15,16 +15,17 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/weather.dart';
 import '../../domain/entities/forecast.dart';
-import '../../domain/repositories/weather_repository.dart';
 import '../../../../config/weather_config.dart';
 import 'package:intl/intl.dart';
 import '../../domain/usecases/get_weather_usecase.dart';
 
 
-final weatherViewModelProvider = StateNotifierProvider<WeatherViewModel, AsyncValue<Weather>>((ref) {
+final weatherViewModelProvider = StateNotifierProvider.family<WeatherViewModel, AsyncValue<Weather>, String>((ref, cityName) {
   final repository = ref.watch(weatherRepositoryProvider);   // from data 
   final getWeather = GetWeatherUseCase(repository); // use case
-  return WeatherViewModel(getWeather: getWeather);
+  final vm = WeatherViewModel(getWeather: getWeather);
+  vm.fetchWeather(cityName); // Automatically fetches on instantiation
+  return vm;
 });
 
 final forecastProvider = FutureProvider.autoDispose.family<List<Forecast>, String>((ref, cityName) async {

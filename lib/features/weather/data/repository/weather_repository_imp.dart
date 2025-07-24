@@ -1,10 +1,24 @@
 /*
  * @Author: Bon Ryan
- * @Created: 2025-07-20
+ * @Created: 2025-07-24
  * @Page: weather_repository_imp
- * @Description: This file contains the WeatherRepositoryImp class for handling weather data operations.
- * It implements the WeatherRepository interface and provides methods for fetching and caching weather data.
+ * @Description: This file implements the WeatherRepository interface.
+ * It provides methods to fetch current weather and a five-day forecast.
+ * It uses local and remote data sources to retrieve and cache weather data.
+ * It handles exceptions and returns cached data when remote data is unavailable.
+ * It is part of the weather data layer and is used by the GetWeatherUseCase.
+ * It encapsulates the logic for interacting with weather data sources.
+ * It is used in the WeatherViewModel to provide weather data to the presentation layer.
+ * It is used to abstract the data source layer from the domain layer.
+ * It allows for easy testing and mocking of weather data operations.
+ * 
+ * 
+ * @File: lib/features/weather/data/repository/weather_repository_imp.dart
+ * 
+ * 
  */
+
+
 import '../../domain/entities/weather.dart';
 import '../../domain/entities/forecast.dart';
 import '../../domain/repositories/weather_repository.dart';
@@ -33,6 +47,7 @@ class WeatherRepositoryImp implements WeatherRepository {
         condition: model.condition,
         description: model.description,
         icon: model.icon,
+        date: model.date,
         lastUpdated: model.lastUpdated,
       );
     } catch (_) {
@@ -44,6 +59,7 @@ class WeatherRepositoryImp implements WeatherRepository {
           condition: cached.condition,
           description: cached.description,
           icon: cached.icon,
+          date: cached.date,
           lastUpdated: cached.lastUpdated,
         );
       }
