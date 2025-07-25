@@ -125,7 +125,7 @@ flutter test
 ## 👨‍💻 Author
 
 **Bon Ryan (@imsuperbon)**  
-iOS & Flutter Engineer • Content Creator • Weather App Enthusiast
+iOS & Flutter Engineer • Content Creator
 
 ---
 
