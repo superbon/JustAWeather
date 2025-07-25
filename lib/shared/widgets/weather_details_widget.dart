@@ -91,7 +91,7 @@ class WeatherDetailsWidget extends ConsumerWidget {
                 padding: const EdgeInsets.only(left: 16.0, top: 4.0),
                 child: Image.network(
                   'https://openweathermap.org/img/wn/${weather.icon}@4x.png',
-                  width: 180,
+                  width: 150,
                   height: 180,
                   color: Colors.orangeAccent,
                   errorBuilder: (context, _, __) =>

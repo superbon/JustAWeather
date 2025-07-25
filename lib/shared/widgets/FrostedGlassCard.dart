@@ -7,7 +7,7 @@
  * The FrostedGlassCard widget is used to create a visually appealing card with a frosted glass effect.
  * It is part of the weather presentation layer and is used to display weather information in a stylish way.
  * It is used in various weather-related screens to provide a modern and sleek design.
- */ 
+ */
 
 import 'dart:ui';
 import 'package:flutter/material.dart';
@@ -26,6 +26,9 @@ class FrostedGlassCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final Color baseColor = theme.colorScheme.surface;
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(30),
       child: BackdropFilter(
@@ -34,10 +37,10 @@ class FrostedGlassCard extends StatelessWidget {
           width: width,
           height: height,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.16), // Glassy overlay
+            color: baseColor.withOpacity(0.16), // Glassy overlay
             borderRadius: BorderRadius.circular(30),
             border: Border.all(
-              color: Colors.white.withOpacity(0.28),
+              color: baseColor.withOpacity(0.28),
               width: 1.2,
             ),
           ),

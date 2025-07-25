@@ -88,10 +88,10 @@ class _WeatherHomeScreenState extends ConsumerState<WeatherHomeScreen> {
             ? TextField(
                 controller: _searchController,
                 autofocus: true,
-                style: const TextStyle(color: Colors.black),
-                decoration: const InputDecoration(
+                style: TextStyle(color: Theme.of(context).hintColor),
+                decoration: InputDecoration(
                   hintText: 'Search city...',
-                  hintStyle: TextStyle(color: Colors.black54),
+                  hintStyle: TextStyle(color: Theme.of(context).hintColor),
                   border: InputBorder.none,
                 ),
                 onSubmitted: (query) {

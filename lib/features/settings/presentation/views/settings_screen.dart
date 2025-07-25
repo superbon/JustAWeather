@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/temp_unit_provider.dart';
+import '../../../../core/theme/theme_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -22,6 +23,7 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final tempUnitAsync = ref.watch(tempUnitProvider);
+    final themeMode = ref.watch(themeModeProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
@@ -34,11 +36,21 @@ class SettingsScreen extends ConsumerWidget {
               onTap: () => context.push('/locations'), // GoRouter navigation
             ),
             ListTile(
-              title: const Text('Change Theme'),
-              onTap: () {
-                // Logic to change theme
+            title: Text('Theme'),
+            trailing: DropdownButton<ThemeMode>(
+              value: ref.watch(themeModeProvider),
+              items: const [
+                DropdownMenuItem(value: ThemeMode.system, child: Text('System')),
+                DropdownMenuItem(value: ThemeMode.light, child: Text('Light')),
+                DropdownMenuItem(value: ThemeMode.dark, child: Text('Dark')),
+              ],
+              onChanged: (mode) {
+                if (mode != null) {
+                  ref.read(themeModeProvider.notifier).setTheme(mode);
+                }
               },
             ),
+          ),
             ListTile(
               title: const Text('Temperature Unit'),
               trailing: DropdownButton<TempUnit>(
