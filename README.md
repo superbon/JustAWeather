@@ -1,6 +1,6 @@
 # 🌤️ JustAWeather – Flutter Weather App
 
-JustAWeather is a sleek, modern weather app built with Flutter using Clean Architecture and MVVM. It displays real-time weather forecasts based on your current location or any city you search for. Built for performance, responsiveness, and customization.
+JustAWeather is a simple Flutter app with a sleek, modern weather app built with Flutter using Clean Architecture and MVVM. It displays real-time weather forecasts based on your current location or any city you search for. Built for performance, responsiveness, and customization.
 
 ---
 
