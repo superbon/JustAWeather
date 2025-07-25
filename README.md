@@ -72,15 +72,6 @@ cd justaweather
 flutter pub get
 ```
 
-### Configuration
-
-1. Rename `.env.example` to `.env`
-2. Add your API key:
-
-```env
-OPENWEATHER_API_KEY=your_api_key_here
-```
-
 ---
 
 ## 🧪 Running the App
@@ -110,15 +101,6 @@ flutter test
 | Home | Forecast | Search | Settings |
 |------|----------|--------|----------|
 | ![](screenshots/home.png) | ![](screenshots/forecast.png) | ![](screenshots/search.png) | ![](screenshots/settings.png) |
-
----
-
-## 📦 Todo
-
-- [ ] Weather alerts
-- [ ] Hourly forecast
-- [ ] Radar maps
-- [ ] Localization (i18n)
 
 ---
 
