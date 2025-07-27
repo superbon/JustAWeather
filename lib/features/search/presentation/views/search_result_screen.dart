@@ -41,10 +41,10 @@ class SearchResultScreen extends ConsumerWidget {
         title: TextField(
           controller: searchController,
           autofocus: false,
-          style: const TextStyle(color: Colors.black),
-          decoration: const InputDecoration(
+          style: TextStyle(color: Theme.of(context).hintColor),
+          decoration: InputDecoration(
             hintText: 'Search city...',
-            hintStyle: TextStyle(color: Colors.black),
+            hintStyle: TextStyle(color: Theme.of(context).hintColor),
             border: InputBorder.none,
           ),
           onSubmitted: (query) {

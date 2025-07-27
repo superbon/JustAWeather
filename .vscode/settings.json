@@ -1,0 +1,32 @@
+{
+    "diffEditor.ignoreTrimWhitespace": false,
+    "security.workspace.trust.untrustedFiles": "open",
+    "python.defaultInterpreterPath": "/usr/local/bin/python3",
+    "[html]": {
+        "editor.defaultFormatter": "vscode.html-language-features"
+    },
+    "git.openRepositoryInParentFolders": "always",
+    "[php]": {
+        "editor.defaultFormatter": "lkrms.pretty-php"
+    },
+    "dart.flutterHotReloadOnSave": "allIfDirty",
+    "dart.hotReloadOnSave": "allIfDirty",
+    "files.autoSave": "afterDelay",
+    "settingsSync.ignoredExtensions": [
+        
+    ],
+    "author-generator.author": "[Bon Ryan]",
+    "author-generator.email": "[bonryan@gmail.com]",
+    "author-generator.updateOnSave": true,
+    "containers.commands.attach": "${containerCommand} exec -it ${containerId} ${shellCommand}",
+    "fileHeaderComment.parameter": {
+    
+
+        "*": {}
+    },
+    "fileHeaderComment.template": {
+        
+        
+
+    }
+}
